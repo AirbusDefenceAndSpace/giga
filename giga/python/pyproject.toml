@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="GIGA_export"
+version = "0.4.0"
+license = {text = "Apache 2"}
+
+authors = [
+    {name = "Roland Brochard", email= "roland.brochard@airbus.com"},
+    {name = "Lucas Marti", email = "lucas.marti@airbus.com"}
+]
+
+description = "Generic Interface Generic Accelerator. Export function for the API to port neural networks and other algorithms to embedded platforms"
+readme = "readme.md"
+requires-python = ">=3.8"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = ["nnef>=1.0", "nnef_tools>=1.0"]
+
+[tool.setuptools]
+packages=["GIGA_export"]
+package-dir = {""="src"}
+
+

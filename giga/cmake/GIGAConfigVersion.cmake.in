@@ -1,0 +1,31 @@
+###############################################################################
+# GIGA library
+# (C) 2024 Airbus copyright all rights reserved
+#
+# Maintainers:
+# Roland Brochard <roland.brochard@airbus.com>
+# Lucas Marti <lucas.marti@airbus.com>
+#
+###############################################################################
+# Software License:
+#
+#   Apache 2
+#
+###############################################################################
+# Description:
+#
+# Report GIGA version to cmake when requested by find_package
+#
+###############################################################################
+
+set(PACKAGE_VERSION "@GIGA_VERSION@")
+ 
+# Check whether the requested PACKAGE_FIND_VERSION is compatible
+if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
+else()
+  set(PACKAGE_VERSION_COMPATIBLE TRUE)
+  if ("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
+    set(PACKAGE_VERSION_EXACT TRUE)
+  endif()
+endif()

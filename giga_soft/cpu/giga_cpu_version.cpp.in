@@ -1,0 +1,30 @@
+/*!
+ * (C) 2024 Airbus copyright all rights reserved
+ * \author Lucas Marti (lucas.marti@airbus.com)
+ * \date 08/02/2024
+ *
+ * Baseline CPU implementation of the GIGA API
+ *
+ */
+
+#include "include/giga_cpu_version.h"
+
+#define PROJECT_NAME GIGA_cpu
+#define PROJECT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define PROJECT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define PROJECT_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+unsigned int giga_cpu_get_version_major()
+{
+    return PROJECT_VERSION_MAJOR;
+}
+
+unsigned int giga_cpu_get_version_minor()
+{
+    return PROJECT_VERSION_MINOR;
+}
+
+unsigned int giga_cpu_get_version_patch()
+{
+    return PROJECT_VERSION_PATCH;
+}
