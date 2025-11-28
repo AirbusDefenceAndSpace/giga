@@ -1,4 +1,4 @@
-# Generic Interface for Generic Accelerators (v0.2.0)
+# Generic Interface for Generic Accelerators (v1.0)
 
 The GIGA API is a C language interface for porting neural networks to generic accelerators such as FPGAs or multi-core processors. Its main purpose is to facilitate the access to accelerated 3x3 2d convolution as it is the main building block of a large majority of embeddable neural networks for image processing and computer vision. 2d convolution is also at the heart of simple linear filters such as Sobel edge detection, etc...
 
