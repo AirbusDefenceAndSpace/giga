@@ -762,7 +762,7 @@ class GIGA_Code_Generator:
         # Fill the upper half of the tensor
         self.fill_string += ('\n'
                              f'    {self.intermediate_type} data_{tensor_name}[] = {{0.0, 0.0, 0.0, 0.0, 0.25, 0.25, 0.0, 0.25, 0.25}};\n'
-                             f'    if ((error = giga_copy_to_tensor(data_{tensor_name}, {self.giga_intermediate_type}, 0, &tensors->{tensor_name})) != GIGA_Succes)\n'
+                             f'    if ((error = giga_copy_to_tensor(data_{tensor_name}, {self.giga_intermediate_type}, 0, &tensors->{tensor_name})) != GIGA_Success)\n'
                               '        return error;\n')
 
         self.avg_pool_declared = True
