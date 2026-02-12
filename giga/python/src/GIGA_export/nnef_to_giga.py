@@ -907,7 +907,7 @@ class GIGA_Code_Generator:
                 values[:, :, 0:2, 1:2] = shaped_values
 
             elif dimensions[2:4] == [1, 2]:
-                values[:, :, 1/2, 0:2] = shaped_values
+                values[:, :, 1:2, 0:2] = shaped_values
 
             elif dimensions[2:4] == [2, 2]:
                 values[:, :, 0:2, 0:2] = shaped_values
