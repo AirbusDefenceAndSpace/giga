@@ -1121,7 +1121,7 @@ if __name__ == "__main__":
         elif mem_size > 1024**1:
             mem_size = f'{(mem_size / 1024**1):.3f}KB'
         else:
-            mem_size = mem_size + "B"
+            mem_size = f'{(mem_size):.3f}B'
         return mem_size
         
     mem_used = format_RAM_size(generator.allocator.memory_used())
