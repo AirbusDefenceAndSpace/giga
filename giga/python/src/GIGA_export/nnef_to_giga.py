@@ -325,7 +325,11 @@ class GIGA_Code_Generator:
                     self.declare_conv(operation, with_relu=True, index=index)
                 else:
                     self.declare_conv(operation, with_relu=False, index=index)
-                    
+
+
+            if operation.name == 'softmax':
+                raise NotImplementedError("Softmax is not yet supported")
+
             # TODO: support dense layers
             if operation.name in ['linear', 'matmul']:
                 raise NotImplementedError("Dense and linear layers are not yet supported")
