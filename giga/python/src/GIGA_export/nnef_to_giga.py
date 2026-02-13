@@ -336,6 +336,7 @@ class GIGA_Code_Generator:
                 self.declare_avg_pool(operation, index)
 
             if operation.name == "multilinear_upsample":
+                raise NotImplementedError("Multilinear upsampling is not yet supported")
                 self.declare_nearest_upsample(operation, index)  # TODO Transform this into a proper multilinear
 
             if operation.name == "nearest_upsample":
