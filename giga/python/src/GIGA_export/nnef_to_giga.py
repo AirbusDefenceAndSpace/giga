@@ -697,48 +697,40 @@ class GIGA_Code_Generator:
     def declare_concat(self, concat_operation: nnef.Operation, index) -> None:
         """
         Concatenation is for now only possible using views. In the future it will be improved depending on the actual graph
+        Instead of two tensors, multiple tensors can be concatenated together
         :param: concat_operation
         :param: index
         :return: None
         """
 
         operation_name = f"op_{self.op_index}"
-        input_name1 = concat_operation.inputs['values'][0]
-        input_name2 = concat_operation.inputs['values'][1]
+        input_names = concat_operation.inputs['values']  # Get all inputs
         output_name = concat_operation.outputs['value']
 
         self.declare_tensor(self.graph.tensors[output_name])
 
-        self.declare_tensor(self.graph.tensors[input_name1], is_view=True)
-        self.declare_tensor(self.graph.tensors[input_name2], is_view=True)
-        
-        input2 = self.graph.tensors[input_name2]
-        
-        prefix_i1 = "tensors"
-        if input_name1 in self.graph.inputs or input_name1 in self.graph.outputs:
-            prefix_i1 = "io"
+        # Declare all input tensors as views
+        for input_name in input_names:
+            self.declare_tensor(self.graph.tensors[input_name], is_view=True)
 
-        prefix_i2 = "tensors"
-        if input_name2 in self.graph.inputs or input_name2 in self.graph.outputs:
-            prefix_i2 = "io"
+        # Create views with appropriate offsets
+        current_offset = 0
+        for i, input_name in enumerate(input_names):
+            input_tensor = self.graph.tensors[input_name]
+            
+            prefix_i = "io" if input_name in self.graph.inputs or input_name in self.graph.outputs else "tensors"
+            prefix_o = "io" if output_name in self.graph.inputs or output_name in self.graph.outputs else "tensors"
 
-        prefix_o = "tensors"
-        if output_name in self.graph.inputs or output_name in self.graph.outputs:
-            prefix_o = "io"
-
-        self.allocate_tensors_string += ('\n'
-                                         f'    GIGA_view_t view_params_{input_name1};\n'
-                                         f'    memset(&view_params_{input_name1}, 0, sizeof(GIGA_view_t));\n'
-                                         f'    if((error = giga_view(&view_params_{input_name1}, &{prefix_o}->{output_name}, &{prefix_i1}->{input_name1})) != GIGA_Success)\n'
-                                         '        return error;\n'
-                                         '\n')
-
-        self.allocate_tensors_string += (f'    GIGA_view_t view_params_{input_name2};\n'
-                                         f'    memset(&view_params_{input_name2}, 0, sizeof(GIGA_view_t));\n'
-                                         f'    view_params_{input_name2}.offset[1] = {input2.shape[1]};\n'
-                                         f'    if((error = giga_view(&view_params_{input_name2}, &{prefix_o}->{output_name}, &{prefix_i2}->{input_name2})) != GIGA_Success)\n'
-                                         '        return error;\n'
-                                         '\n')
+            self.allocate_tensors_string += (
+                f'    GIGA_view_t view_params_{input_name};\n'
+                f'    memset(&view_params_{input_name}, 0, sizeof(GIGA_view_t));\n'
+                f'    view_params_{input_name}.offset[1] = {current_offset};\n'
+                f'    if((error = giga_view(&view_params_{input_name}, &{prefix_o}->{output_name}, &{prefix_i}->{input_name})) != GIGA_Success)\n'
+                '        return error;\n\n'
+            )
+            
+            # Update offset for next tensor (assuming concat on dimension 1)
+            current_offset += input_tensor.shape[1]
 
     def look_for_relu_after(self, operation: nnef.Operation) -> (bool, nnef.Operation):
         output_name = operation.outputs['output']
