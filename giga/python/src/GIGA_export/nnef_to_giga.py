@@ -327,6 +327,8 @@ class GIGA_Code_Generator:
                     self.declare_conv(operation, with_relu=False, index=index)
                     
             # TODO: support dense layers
+            if operation.name in ['linear', 'matmul']:
+                raise NotImplementedError("Dense layers are not yet supported")
 
             # We assume 'relu' as already processed as part of a previous layer (either conv or dense)
             if operation.name == 'relu':
