@@ -708,6 +708,10 @@ class GIGA_Code_Generator:
         input_names = concat_operation.inputs['values']  # Get all inputs
         output_name = concat_operation.outputs['value']
 
+        #Check if concat is not a self-concat
+        if len(input_names) != len(set(input_names)):
+            raise NotImplementedError("Self-concatenation is not supported.")
+
         self.declare_tensor(self.graph.tensors[output_name])
 
         # Declare all input tensors as views
