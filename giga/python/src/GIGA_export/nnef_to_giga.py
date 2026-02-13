@@ -967,6 +967,11 @@ class GIGA_Code_Generator:
             raise RuntimeError("ERROR : 1x1 convolutions are not supported yet, " \
             "as they require a specific implementation to be efficient. Please look at the README for more details.")
 
+        if kernel_shape[2] == 2 and kernel_shape[3] == 2:
+            raise RuntimeError("ERROR : 2x2 convolutions are not supported yet, " \
+            "as they require a specific implementation to be efficient. Please look at the README for more details.")
+
+
         # Padding surgery for smaller kernels
         if kernel_shape[2] in [1, 2]:
             padding[0][1] += 1
