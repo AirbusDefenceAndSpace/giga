@@ -962,6 +962,10 @@ class GIGA_Code_Generator:
         with_relu = str(with_relu).lower()
         input_name = conv_operation.inputs['input']
         output_name = conv_operation.outputs['output']
+        
+        if kernel_shape[2] == 1 and kernel_shape[3] == 1:
+            raise RuntimeError("ERROR : 1x1 convolutions are not supported yet, " \
+            "as they require a specific implementation to be efficient. Please look at the README for more details.")
 
         # Padding surgery for smaller kernels
         if kernel_shape[2] in [1, 2]:
