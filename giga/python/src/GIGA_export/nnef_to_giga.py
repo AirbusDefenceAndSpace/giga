@@ -336,6 +336,10 @@ class GIGA_Code_Generator:
             # TODO: support dense layers
             if operation.name in ['linear', 'matmul']:
                 raise NotImplementedError("Dense and linear layers are not yet supported")
+            
+            if operation.name == "avg_pool":
+                raise NotImplementedError("Avg_pool is not yet supported")
+
 
             # We assume 'relu' as already processed as part of a previous layer (either conv or dense)
             if operation.name == 'relu':
