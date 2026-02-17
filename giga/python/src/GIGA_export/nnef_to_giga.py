@@ -329,6 +329,9 @@ class GIGA_Code_Generator:
 
             if operation.name == 'softmax':
                 raise NotImplementedError("Softmax is not yet supported")
+            
+            if operation.name == "add":
+                raise NotImplementedError("Add operations are not yet supported")
 
             # TODO: support dense layers
             if operation.name in ['linear', 'matmul']:
