@@ -1,0 +1,24 @@
+pytorch2.5.1:Œ
+—
+input
+conv.weight
+	conv.biasoutput
+/conv/Conv"Conv*
+	dilations@@ *
+group *
+kernel_shape@@ *
+pads@@@@ *
+strides@@ 
+main_graph*…Bconv.weightJl¸³‘=ÖÒó½4m/>r¾"Þ;>üm1½ˆiÔ¼+^½ÃÔ½ü¶G>?™¼K&Ã¼M+>µu>û<H<0Â¾ Ì¾À‰)¾§û =Ÿæ#¾u)¾Eÿø¼ŸwV=g,>¶-ñ<„.>ªC1¾*B	conv.biasJ…-¯¼Z!
+input
+
+
+
+€
+€b"
+output
+
+
+
+€
+€B
