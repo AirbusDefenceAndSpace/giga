@@ -206,7 +206,7 @@ class GIGA_Code_Generator:
         self.op_structure_string = f"typedef struct {self.network_name}_ops{{\n"
         self.io_structure_string = f"typedef struct {self.network_name}_io{{\n"
 
-        self.header_file = "#include <giga/giga.h>\n#include <string.h>\n#include <giga/utils.h>"
+        self.header_file = "#include <giga/giga.h>\n#include <string.h>\n#include <tests/utils.h>"
 
         self.initialize_string = f"int initialize_{self.network_name}(uint32_t *device_id)"
 
