@@ -49,6 +49,8 @@ if __name__ == "__main__":
         if node.op_type == 'Pad':
             f"Pad (used in node '{node.name or node.output[0]}')"
             raise NotImplementedError("The ONNX fPad operator is not supported yet.")
+        if node.op_type == 'LeakyRelu':
+            raise NotImplementedError("The ONNX LeakyRelu operator is not supported, please switch it to Relu Layer.")
 
     print("Creating directories")
     os.makedirs(args.output, exist_ok=True)
