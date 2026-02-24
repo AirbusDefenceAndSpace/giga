@@ -8,6 +8,7 @@ author Lucas Marti (lucas.marti@airbus.com)
 Translation from ONNX files to C code for calling the Giga API.
 """
 
+import onnx
 import torch
 import os
 from pathlib import Path
@@ -41,6 +42,16 @@ if __name__ == "__main__":
                         help="Specify the memory allocator to use. Valid values are: 'sequential', 'greedy'", default="sequential")
 
     args = parser.parse_args()
+
+    ######## Unsupported Layers ########
+    model = onnx.load(args.input)
+    for node in model.graph.node:
+        if node.op_type == 'Pad':
+            f"Pad (used in node '{node.name or node.output[0]}')"
+            raise NotImplementedError("The ONNX fPad operator is not supported yet.")
+        if node.op_type == 'LeakyRelu':
+            raise NotImplementedError("The ONNX LeakyRelu operator is not supported, please switch it to Relu Layer.")
+
     print("Creating directories")
     os.makedirs(args.output, exist_ok=True)
     torch.manual_seed(0)

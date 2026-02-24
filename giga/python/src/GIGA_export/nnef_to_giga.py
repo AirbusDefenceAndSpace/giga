@@ -206,7 +206,7 @@ class GIGA_Code_Generator:
         self.op_structure_string = f"typedef struct {self.network_name}_ops{{\n"
         self.io_structure_string = f"typedef struct {self.network_name}_io{{\n"
 
-        self.header_file = "#include <giga/giga.h>\n#include <string.h>\n#include <giga/utils.h>"
+        self.header_file = "#include <giga/giga.h>\n#include <string.h>\n#include <tests/utils.h>"
 
         self.initialize_string = f"int initialize_{self.network_name}(uint32_t *device_id)"
 
@@ -325,8 +325,21 @@ class GIGA_Code_Generator:
                     self.declare_conv(operation, with_relu=True, index=index)
                 else:
                     self.declare_conv(operation, with_relu=False, index=index)
-                    
+
+
+            if operation.name == 'softmax':
+                raise NotImplementedError("Softmax is not yet supported")
+            
+            if operation.name == "add":
+                raise NotImplementedError("Add operations are not yet supported")
+
             # TODO: support dense layers
+            if operation.name in ['linear', 'matmul']:
+                raise NotImplementedError("Dense and linear layers are not yet supported")
+            
+            if operation.name == "avg_pool":
+                raise NotImplementedError("Avg_pool is not yet supported")
+
 
             # We assume 'relu' as already processed as part of a previous layer (either conv or dense)
             if operation.name == 'relu':
@@ -336,6 +349,7 @@ class GIGA_Code_Generator:
                 self.declare_avg_pool(operation, index)
 
             if operation.name == "multilinear_upsample":
+                raise NotImplementedError("Multilinear upsampling is not yet supported")
                 self.declare_nearest_upsample(operation, index)  # TODO Transform this into a proper multilinear
 
             if operation.name == "nearest_upsample":
@@ -697,48 +711,44 @@ class GIGA_Code_Generator:
     def declare_concat(self, concat_operation: nnef.Operation, index) -> None:
         """
         Concatenation is for now only possible using views. In the future it will be improved depending on the actual graph
+        Instead of two tensors, multiple tensors can be concatenated together
         :param: concat_operation
         :param: index
         :return: None
         """
 
         operation_name = f"op_{self.op_index}"
-        input_name1 = concat_operation.inputs['values'][0]
-        input_name2 = concat_operation.inputs['values'][1]
+        input_names = concat_operation.inputs['values']  # Get all inputs
         output_name = concat_operation.outputs['value']
+
+        #Check if concat is not a self-concat
+        if len(input_names) != len(set(input_names)):
+            raise NotImplementedError("Self-concatenation is not supported.")
 
         self.declare_tensor(self.graph.tensors[output_name])
 
-        self.declare_tensor(self.graph.tensors[input_name1], is_view=True)
-        self.declare_tensor(self.graph.tensors[input_name2], is_view=True)
-        
-        input2 = self.graph.tensors[input_name2]
-        
-        prefix_i1 = "tensors"
-        if input_name1 in self.graph.inputs or input_name1 in self.graph.outputs:
-            prefix_i1 = "io"
+        # Declare all input tensors as views
+        for input_name in input_names:
+            self.declare_tensor(self.graph.tensors[input_name], is_view=True)
 
-        prefix_i2 = "tensors"
-        if input_name2 in self.graph.inputs or input_name2 in self.graph.outputs:
-            prefix_i2 = "io"
+        # Create views with appropriate offsets
+        current_offset = 0
+        for i, input_name in enumerate(input_names):
+            input_tensor = self.graph.tensors[input_name]
+            
+            prefix_i = "io" if input_name in self.graph.inputs or input_name in self.graph.outputs else "tensors"
+            prefix_o = "io" if output_name in self.graph.inputs or output_name in self.graph.outputs else "tensors"
 
-        prefix_o = "tensors"
-        if output_name in self.graph.inputs or output_name in self.graph.outputs:
-            prefix_o = "io"
-
-        self.allocate_tensors_string += ('\n'
-                                         f'    GIGA_view_t view_params_{input_name1};\n'
-                                         f'    memset(&view_params_{input_name1}, 0, sizeof(GIGA_view_t));\n'
-                                         f'    if((error = giga_view(&view_params_{input_name1}, &{prefix_o}->{output_name}, &{prefix_i1}->{input_name1})) != GIGA_Success)\n'
-                                         '        return error;\n'
-                                         '\n')
-
-        self.allocate_tensors_string += (f'    GIGA_view_t view_params_{input_name2};\n'
-                                         f'    memset(&view_params_{input_name2}, 0, sizeof(GIGA_view_t));\n'
-                                         f'    view_params_{input_name2}.offset[1] = {input2.shape[1]};\n'
-                                         f'    if((error = giga_view(&view_params_{input_name2}, &{prefix_o}->{output_name}, &{prefix_i2}->{input_name2})) != GIGA_Success)\n'
-                                         '        return error;\n'
-                                         '\n')
+            self.allocate_tensors_string += (
+                f'    GIGA_view_t view_params_{input_name};\n'
+                f'    memset(&view_params_{input_name}, 0, sizeof(GIGA_view_t));\n'
+                f'    view_params_{input_name}.offset[1] = {current_offset};\n'
+                f'    if((error = giga_view(&view_params_{input_name}, &{prefix_o}->{output_name}, &{prefix_i}->{input_name})) != GIGA_Success)\n'
+                '        return error;\n\n'
+            )
+            
+            # Update offset for next tensor (assuming concat on dimension 1)
+            current_offset += input_tensor.shape[1]
 
     def look_for_relu_after(self, operation: nnef.Operation) -> (bool, nnef.Operation):
         output_name = operation.outputs['output']
@@ -762,7 +772,7 @@ class GIGA_Code_Generator:
         # Fill the upper half of the tensor
         self.fill_string += ('\n'
                              f'    {self.intermediate_type} data_{tensor_name}[] = {{0.0, 0.0, 0.0, 0.0, 0.25, 0.25, 0.0, 0.25, 0.25}};\n'
-                             f'    if ((error = giga_copy_to_tensor(data_{tensor_name}, {self.giga_intermediate_type}, 0, &tensors->{tensor_name})) != GIGA_Succes)\n'
+                             f'    if ((error = giga_copy_to_tensor(data_{tensor_name}, {self.giga_intermediate_type}, 0, &tensors->{tensor_name})) != GIGA_Success)\n'
                               '        return error;\n')
 
         self.avg_pool_declared = True
@@ -907,7 +917,7 @@ class GIGA_Code_Generator:
                 values[:, :, 0:2, 1:2] = shaped_values
 
             elif dimensions[2:4] == [1, 2]:
-                values[:, :, 1/2, 0:2] = shaped_values
+                values[:, :, 1:2, 0:2] = shaped_values
 
             elif dimensions[2:4] == [2, 2]:
                 values[:, :, 0:2, 0:2] = shaped_values
@@ -962,6 +972,15 @@ class GIGA_Code_Generator:
         with_relu = str(with_relu).lower()
         input_name = conv_operation.inputs['input']
         output_name = conv_operation.outputs['output']
+        
+        if kernel_shape[2] == 1 and kernel_shape[3] == 1:
+            raise RuntimeError("ERROR : 1x1 convolutions are not supported yet, " \
+            "as they require a specific implementation to be efficient. Please look at the README for more details.")
+
+        if kernel_shape[2] == 2 and kernel_shape[3] == 2:
+            raise RuntimeError("ERROR : 2x2 convolutions are not supported yet, " \
+            "as they require a specific implementation to be efficient. Please look at the README for more details.")
+
 
         # Padding surgery for smaller kernels
         if kernel_shape[2] in [1, 2]:
@@ -1121,7 +1140,7 @@ if __name__ == "__main__":
         elif mem_size > 1024**1:
             mem_size = f'{(mem_size / 1024**1):.3f}KB'
         else:
-            mem_size = mem_size + "B"
+            mem_size = f'{(mem_size):.3f}B'
         return mem_size
         
     mem_used = format_RAM_size(generator.allocator.memory_used())
